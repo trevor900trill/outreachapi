@@ -121,3 +121,4 @@
 /Users/trevormugo/Desktop/PROJECTS/OUTREACHTOURS/CSHARP/OutReachToursAPI/obj/Debug/net10.0/OutReachToursAPI.pdb
 /Users/trevormugo/Desktop/PROJECTS/OUTREACHTOURS/CSHARP/OutReachToursAPI/obj/Debug/net10.0/OutReachToursAPI.genruntimeconfig.cache
 /Users/trevormugo/Desktop/PROJECTS/OUTREACHTOURS/CSHARP/OutReachToursAPI/obj/Debug/net10.0/ref/OutReachToursAPI.dll
+/Users/trevormugo/Desktop/PROJECTS/OUTREACHTOURS/CSHARP/OutReachToursAPI/obj/Debug/net10.0/OutReachToursAPI.sourcelink.json
