@@ -92,6 +92,7 @@ using (var scope = app.Services.CreateScope())
     {
         // Force update the existing admin user to have the correct role and password
         adminUser.RoleId = "admin_role_id";
+        
         adminUser.PasswordHash = OutReachToursAPI.Controllers.AuthController.ComputeHash("password123");
     }
     context.SaveChanges();
