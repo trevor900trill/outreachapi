@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("OutReachToursAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+100404339cf4708f8d776f259b5513856f5ce6b7")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+6ab883321fac8a4029e7d4919c5ab1161d13da99")]
 [assembly: System.Reflection.AssemblyProductAttribute("OutReachToursAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("OutReachToursAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
