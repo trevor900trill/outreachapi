@@ -14,6 +14,8 @@ namespace OutReachToursAPI.Models
         public string? Avatar { get; set; }
         public int? ActiveLeads { get; set; }
         public double? ConversionRate { get; set; }
+        public string? PasswordResetToken { get; set; }
+        public DateTime? PasswordResetTokenExpiry { get; set; }
     }
 
     public class CustomRole

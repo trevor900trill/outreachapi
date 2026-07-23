@@ -73,7 +73,12 @@ namespace OutReachToursAPI.Controllers
     public class UsersController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public UsersController(AppDbContext context) => _context = context;
+        private readonly IConfiguration _config;
+        public UsersController(AppDbContext context, IConfiguration config)
+        {
+            _context = context;
+            _config = config;
+        }
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers() => await _context.Users.ToListAsync();
@@ -81,15 +86,23 @@ namespace OutReachToursAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> CreateUser([FromServices] OutReachToursAPI.Services.IEmailService emailService, User user)
         {
+            // Generate password reset token so the invited user can set their password
+            var resetToken = Guid.NewGuid().ToString("N");
+            user.PasswordResetToken = resetToken;
+            user.PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(72);
+            user.PasswordHash = ""; // No password yet — must be set via reset link
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             
-            // Send Invite Email
+            // Send branded invite email with password reset link
             if (!string.IsNullOrEmpty(user.Email))
             {
-                await emailService.SendEmailAsync(user.Email, "You've been invited to Outreach Tours CRM", 
-                    "Welcome to Outreach Tours CRM! Log in at http://localhost:3000 to get started.", 
-                    "<strong>Welcome to Outreach Tours CRM!</strong> <a href='http://localhost:3000'>Log in here</a> to get started.");
+                var frontendUrl = (_config["FRONTEND_URL"] ?? "https://outreach-admin-seven.vercel.app").TrimEnd('/');
+                var resetUrl = $"{frontendUrl}/reset-password?token={resetToken}";
+
+                var (plain, html) = OutReachToursAPI.Services.EmailTemplates.GetInviteEmail(user.Name, resetUrl);
+                await emailService.SendEmailAsync(user.Email, "You've been invited to Outreach Tours", plain, html);
             }
 
             return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, user);
@@ -168,18 +181,18 @@ namespace OutReachToursAPI.Controllers
 
             var client = await _context.Clients.FindAsync(tx.ClientId);
             var tour = await _context.Tours.FindAsync(tx.TourId);
-            var segment = tour?.Segment; // "Ultra Luxury", "Impact and Luxury", or "Impact"
+            var segment = tour?.Segment;
 
             if (client != null && !string.IsNullOrEmpty(client.Email))
             {
                 // Generate Paystack Link
                 var paymentUrl = await paymentService.CreatePaymentLinkAsync(client.Email, (int)tx.AmountKES, tx.InvoiceNumber);
 
-                // Send Email with Invoice and Payment Link
-                var msg = $"Hello {client.Name},\n\nYour invoice {tx.InvoiceNumber} for {tx.AmountKES} KES has been generated. \nPay securely here: {paymentUrl}";
-                var htmlMsg = $"<h3>Hello {client.Name},</h3><p>Your invoice <strong>{tx.InvoiceNumber}</strong> for {tx.AmountKES} KES is ready.</p><p><a href='{paymentUrl}'>Click here to pay securely via Paystack</a></p>";
+                // Send branded invoice email
+                var (plain, html) = OutReachToursAPI.Services.EmailTemplates.GetInvoiceEmail(
+                    client.Name, tx.InvoiceNumber, tx.AmountKES, paymentUrl, segment);
                 
-                await emailService.SendEmailAsync(client.Email, $"Invoice {tx.InvoiceNumber} from Outreach Tours", msg, htmlMsg, segment);
+                await emailService.SendEmailAsync(client.Email, $"Invoice {tx.InvoiceNumber} from Outreach Tours", plain, html, segment);
             }
 
             return CreatedAtAction(nameof(GetTransactions), new { id = tx.Id }, tx);
