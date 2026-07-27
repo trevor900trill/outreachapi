@@ -247,6 +247,61 @@ Thank you for choosing Outreach Tours.
             return (plain, html);
         }
 
+        /// <summary>
+        /// Branded email sent when a user requests a password reset.
+        /// </summary>
+        public static (string plain, string html) GetForgotPasswordEmail(string userName, string resetUrl)
+        {
+            var plain = $@"Hello {userName},
+
+We received a request to reset your password for your Outreach Tours account.
+
+To reset your password, please click the link below:
+{resetUrl}
+
+This link will expire in 2 hours.
+
+If you did not request a password reset, please ignore this email or contact support if you have concerns.
+
+— The Outreach Tours Team";
+
+            var body = $@"
+                <h1 style=""margin:0 0 8px 0;font-size:24px;font-weight:700;color:{TextWhite};"">Password Reset Request</h1>
+                <p style=""margin:0 0 24px 0;font-size:14px;color:{TextMuted};line-height:1.5;"">
+                    Hi {EscapeHtml(userName)}, we received a request to reset the password for your <strong style=""color:{TextWhite};"">Outreach Tours CRM</strong> account.
+                </p>
+                
+                <!-- CTA Button -->
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;"">
+                    <tr>
+                        <td align=""center"">
+                            <a href=""{EscapeHtml(resetUrl)}"" target=""_blank"" style=""display:inline-block;background-color:{PrimaryGold};color:{DarkBg};font-size:14px;font-weight:700;text-decoration:none;padding:14px 40px;border-radius:8px;letter-spacing:0.3px;"">
+                                Reset Password
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+                
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""border-top:1px solid {BorderColor};padding-top:16px;"">
+                    <tr>
+                        <td>
+                            <p style=""margin:0 0 8px 0;font-size:12px;color:{TextMuted};line-height:1.6;"">
+                                🔗 Can't click the button? Copy and paste this link into your browser:
+                            </p>
+                            <p style=""margin:0;font-size:11px;color:{PrimaryGold};word-break:break-all;line-height:1.6;"">
+                                {EscapeHtml(resetUrl)}
+                            </p>
+                            <p style=""margin:12px 0 0 0;font-size:11px;color:#555;"">
+                                This link expires in 2 hours. If you did not request a password reset, you can safely ignore this email.
+                            </p>
+                        </td>
+                    </tr>
+                </table>";
+
+            var html = WrapInLayout(body, $"Reset your Outreach Tours password");
+            return (plain, html);
+        }
+
         private static string EscapeHtml(string input)
         {
             return System.Net.WebUtility.HtmlEncode(input ?? "");

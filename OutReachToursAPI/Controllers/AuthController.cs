@@ -13,15 +13,24 @@ namespace OutReachToursAPI.Controllers
         public string NewPassword { get; set; } = string.Empty;
     }
 
+    public class ForgotPasswordDto
+    {
+        public string Email { get; set; } = string.Empty;
+    }
+
     [ApiController]
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _config;
+        private readonly OutReachToursAPI.Services.IEmailService _emailService;
 
-        public AuthController(AppDbContext context)
+        public AuthController(AppDbContext context, IConfiguration config, OutReachToursAPI.Services.IEmailService emailService)
         {
             _context = context;
+            _config = config;
+            _emailService = emailService;
         }
 
         [HttpPost("login")]
@@ -85,6 +94,36 @@ namespace OutReachToursAPI.Controllers
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Password has been set successfully. You can now log in." });
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.Email))
+            {
+                return BadRequest(new { message = "Email is required." });
+            }
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+            if (user == null)
+            {
+                // Always return Ok to prevent email enumeration attacks
+                return Ok(new { message = "If an account with that email exists, a password reset link has been sent." });
+            }
+
+            var resetToken = Guid.NewGuid().ToString("N");
+            user.PasswordResetToken = resetToken;
+            user.PasswordResetTokenExpiry = DateTime.UtcNow.AddHours(2);
+
+            await _context.SaveChangesAsync();
+
+            var frontendUrl = (_config["FRONTEND_URL"] ?? "https://outreach-admin-seven.vercel.app").TrimEnd('/');
+            var resetUrl = $"{frontendUrl}/reset-password?token={resetToken}";
+
+            var (plain, html) = OutReachToursAPI.Services.EmailTemplates.GetForgotPasswordEmail(user.Name, resetUrl);
+            await _emailService.SendEmailAsync(user.Email, "Password Reset Request", plain, html);
+
+            return Ok(new { message = "If an account with that email exists, a password reset link has been sent." });
         }
 
         public static string ComputeHash(string password)

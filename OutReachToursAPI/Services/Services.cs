@@ -14,74 +14,76 @@ namespace OutReachToursAPI.Services
         Task SendEmailAsync(string toEmail, string subject, string plainTextContent, string htmlContent, string? segment = null);
     }
 
-    public class SmtpEmailService : IEmailService
+    public class ResendEmailService : IEmailService
     {
         private readonly IConfiguration _config;
-        private readonly ILogger<SmtpEmailService> _logger;
+        private readonly ILogger<ResendEmailService> _logger;
+        private readonly HttpClient _httpClient;
 
-        public SmtpEmailService(IConfiguration config, ILogger<SmtpEmailService> logger)
+        public ResendEmailService(IConfiguration config, ILogger<ResendEmailService> logger, HttpClient httpClient)
         {
             _config = config;
             _logger = logger;
+            _httpClient = httpClient;
         }
 
         public async Task SendEmailAsync(string toEmail, string subject, string plainTextContent, string htmlContent, string? segment = null)
         {
-            var host = _config["Smtp:Host"];
-            var port = int.Parse(_config["Smtp:Port"] ?? "465");
-            var enableSsl = bool.Parse(_config["Smtp:EnableSsl"] ?? "true");
+            var apiKey = _config["Resend:ApiKey"];
+            
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                _logger.LogWarning("Resend API Key is not configured. Email simulated: [{Subject}] to [{Email}]", subject, toEmail);
+                return;
+            }
 
             // Select sender credentials based on tour segment
-            string fromEmail, fromPassword, fromDisplayName;
+            string fromEmail, fromDisplayName;
 
             if (string.Equals(segment, "Ultra Luxury", StringComparison.OrdinalIgnoreCase))
             {
-                fromEmail = _config["Smtp:Concierge:Email"] ?? "concierge@outreachtours.com";
-                fromPassword = _config["Smtp:Concierge:Password"] ?? "";
+                // fromEmail = _config["Smtp:Concierge:Email"] ?? "concierge@outreachtours.com";
+                fromEmail = "concierge@markopilot.com"; // TEMPORARY: Using verified domain
                 fromDisplayName = "Outreach Tours Concierge";
             }
             else
             {
-                fromEmail = _config["Smtp:Journeys:Email"] ?? "journeys@outreachtours.com";
-                fromPassword = _config["Smtp:Journeys:Password"] ?? "";
+                // fromEmail = _config["Smtp:Journeys:Email"] ?? "journeys@outreachtours.com";
+                fromEmail = "journeys@markopilot.com"; // TEMPORARY: Using verified domain
                 fromDisplayName = "Outreach Tours Journeys";
-            }
-
-            if (string.IsNullOrEmpty(host) || string.IsNullOrEmpty(fromPassword))
-            {
-                _logger.LogWarning("SMTP is not configured. Email simulated: [{Subject}] to [{Email}] from [{From}]", subject, toEmail, fromEmail);
-                return;
             }
 
             try
             {
-                using var message = new MailMessage();
-                message.From = new MailAddress(fromEmail, fromDisplayName);
-                message.To.Add(new MailAddress(toEmail));
-                message.Subject = subject;
-                message.Body = htmlContent;
-                message.IsBodyHtml = true;
+                var request = new HttpRequestMessage(HttpMethod.Post, "https://api.resend.com/emails");
+                request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
 
-                // Add plain-text alternative view for email clients that prefer it
-                if (!string.IsNullOrEmpty(plainTextContent))
+                var payload = new
                 {
-                    var plainView = AlternateView.CreateAlternateViewFromString(plainTextContent, null, "text/plain");
-                    var htmlView = AlternateView.CreateAlternateViewFromString(htmlContent, null, "text/html");
-                    message.AlternateViews.Add(plainView);
-                    message.AlternateViews.Add(htmlView);
-                    message.Body = null; // Let the alternate views handle it
+                    from = $"{fromDisplayName} <{fromEmail}>",
+                    to = new[] { toEmail },
+                    subject = subject,
+                    html = htmlContent,
+                    text = plainTextContent
+                };
+
+                request.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(payload), System.Text.Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("Email sent successfully via Resend: [{Subject}] to [{Email}] from [{From}]", subject, toEmail, fromEmail);
                 }
-
-                using var client = new SmtpClient(host, port);
-                client.Credentials = new NetworkCredential(fromEmail, fromPassword);
-                client.EnableSsl = enableSsl;
-
-                await client.SendMailAsync(message);
-                _logger.LogInformation("Email sent: [{Subject}] to [{Email}] from [{From}]", subject, toEmail, fromEmail);
+                else
+                {
+                    var errorDetails = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Failed to send email via Resend. Status: {Status}, Details: {Details}", response.StatusCode, errorDetails);
+                }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to send email [{Subject}] to [{Email}]", subject, toEmail);
+                _logger.LogError(ex, "Exception occurred while sending email [{Subject}] to [{Email}] via Resend", subject, toEmail);
             }
         }
     }

@@ -56,7 +56,7 @@ string GetFormattedConnectionString(IConfiguration config)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(GetFormattedConnectionString(builder.Configuration)));
 
-builder.Services.AddScoped<OutReachToursAPI.Services.IEmailService, OutReachToursAPI.Services.SmtpEmailService>();
+builder.Services.AddHttpClient<OutReachToursAPI.Services.IEmailService, OutReachToursAPI.Services.ResendEmailService>();
 builder.Services.AddScoped<OutReachToursAPI.Services.IPaymentService, OutReachToursAPI.Services.PaystackPaymentService>();
 
 // Add services to the container.
