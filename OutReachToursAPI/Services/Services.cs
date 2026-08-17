@@ -42,14 +42,12 @@ namespace OutReachToursAPI.Services
 
             if (string.Equals(segment, "Ultra Luxury", StringComparison.OrdinalIgnoreCase))
             {
-                // fromEmail = _config["Smtp:Concierge:Email"] ?? "concierge@outreachtours.com";
-                fromEmail = "concierge@markopilot.com"; // TEMPORARY: Using verified domain
+                fromEmail = _config["Smtp:Concierge:Email"] ?? "concierge@outreachtours.com";
                 fromDisplayName = "Outreach Tours Concierge";
             }
             else
             {
-                // fromEmail = _config["Smtp:Journeys:Email"] ?? "journeys@outreachtours.com";
-                fromEmail = "journeys@markopilot.com"; // TEMPORARY: Using verified domain
+                fromEmail = _config["Smtp:Journeys:Email"] ?? "journeys@outreachtours.com";
                 fromDisplayName = "Outreach Tours Journeys";
             }
 
