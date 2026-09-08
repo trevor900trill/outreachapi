@@ -61,6 +61,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddHttpClient<OutReachToursAPI.Services.IEmailService, OutReachToursAPI.Services.ResendEmailService>();
 builder.Services.AddScoped<OutReachToursAPI.Services.IPaymentService, OutReachToursAPI.Services.PaystackPaymentService>();
+builder.Services.AddHttpClient<OutReachToursAPI.Services.IHotelAvailabilityService, OutReachToursAPI.Services.RapidApiHotelService>();
 
 // Add services to the container.
 builder.Services.AddControllers();

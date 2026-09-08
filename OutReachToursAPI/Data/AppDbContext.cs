@@ -17,6 +17,8 @@ namespace OutReachToursAPI.Data
         public DbSet<Tour> Tours { get; set; }
         public DbSet<POSTransaction> Transactions { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<Hotel> Hotels { get; set; }
+        public DbSet<HotelBooking> HotelBookings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
