@@ -9,6 +9,7 @@ namespace OutReachToursAPI.Data
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         public DbSet<User> Users { get; set; }
+        
         public DbSet<CustomRole> Roles { get; set; }
         public DbSet<PipelineStage> Stages { get; set; }
         public DbSet<Client> Clients { get; set; }
