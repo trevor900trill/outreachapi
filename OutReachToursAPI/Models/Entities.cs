@@ -137,6 +137,11 @@ namespace OutReachToursAPI.Models
         public string VoucherNumber { get; set; } = string.Empty;
         public double RatePerNightKES { get; set; }
         public double TotalAmountKES { get; set; }
+        public double PaidAmountKES { get; set; } = 0;
+        public string? PaystackReference { get; set; }
+        public string? PaymentUrl { get; set; }
+        public string? HotelContactEmail { get; set; }
+        public string? HotelNotifiedAt { get; set; }
         public string Notes { get; set; } = string.Empty;
         public string CreatedAt { get; set; } = DateTime.UtcNow.ToString("o");
     }

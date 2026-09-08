@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using OutReachToursAPI.Data;
@@ -12,9 +13,11 @@ using OutReachToursAPI.Data;
 namespace OutReachToursAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260908161528_AddPaymentFieldsToBookings")]
+    partial class AddPaymentFieldsToBookings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -188,18 +191,12 @@ namespace OutReachToursAPI.Migrations
                     b.Property<string>("HoldExpiryDate")
                         .HasColumnType("text");
 
-                    b.Property<string>("HotelContactEmail")
-                        .HasColumnType("text");
-
                     b.Property<string>("HotelId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("HotelName")
                         .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("HotelNotifiedAt")
                         .HasColumnType("text");
 
                     b.Property<string>("Notes")

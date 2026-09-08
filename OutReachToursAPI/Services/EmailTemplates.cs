@@ -302,6 +302,348 @@ If you did not request a password reset, please ignore this email or contact sup
             return (plain, html);
         }
 
+        /// <summary>
+        /// Branded email sent to a client when a provisional hotel hold is placed.
+        /// Informs them of the reservation details arranged under their trip package (no payment link).
+        /// </summary>
+        public static (string plain, string html) GetHoldNotificationEmail(
+            string clientName, string hotelName, string roomType, string checkIn, string checkOut,
+            double totalAmountKES, string voucherNumber)
+        {
+            var formattedAmount = totalAmountKES.ToString("N0");
+
+            var plain = $@"Hello {clientName},
+
+A provisional room reservation hold has been placed on your behalf by Outreach Tours as part of your booked trip itinerary.
+
+Hotel: {hotelName}
+Room: {roomType}
+Check-in: {checkIn}
+Check-out: {checkOut}
+Accommodation Value: KES {formattedAmount}
+Voucher Number: {voucherNumber}
+
+This accommodation hold is arranged and coordinated directly under your Outreach Tours trip package. No separate payment is required from you for this hold. Our concierge team is coordinating all details for your stay.
+
+If you have any special requests or questions regarding your itinerary, please feel free to reach out to us.
+
+— The Outreach Tours Team";
+
+            var body = $@"
+                <h1 style=""margin:0 0 8px 0;font-size:24px;font-weight:700;color:{TextWhite};"">Room Hold Reserved 🏨</h1>
+                <p style=""margin:0 0 24px 0;font-size:14px;color:{TextMuted};line-height:1.5;"">
+                    Hello {EscapeHtml(clientName)}, a provisional room hold has been reserved for your upcoming journey with Outreach Tours.
+                </p>
+                
+                <!-- Hotel Details Card -->
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;background-color:rgba(255,255,255,0.03);border:1px solid {BorderColor};border-radius:12px;overflow:hidden;"">
+                    <tr>
+                        <td style=""padding:20px;"">
+                            <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                <tr>
+                                    <td style=""padding-bottom:12px;border-bottom:1px solid {BorderColor};"">
+                                        <p style=""margin:0;font-size:11px;color:{PrimaryGold};text-transform:uppercase;letter-spacing:1px;font-weight:600;"">Reserved Hotel</p>
+                                        <p style=""margin:4px 0 0 0;font-size:16px;font-weight:700;color:{TextWhite};"">{EscapeHtml(hotelName)}</p>
+                                        <p style=""margin:4px 0 0 0;font-size:12px;color:{TextMuted};"">{EscapeHtml(roomType)}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding:12px 0;border-bottom:1px solid {BorderColor};"">
+                                        <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                            <tr>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Check-in</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;color:{TextWhite};font-weight:600;"">{EscapeHtml(checkIn)}</p>
+                                                </td>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Check-out</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;color:{TextWhite};font-weight:600;"">{EscapeHtml(checkOut)}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding:12px 0;border-bottom:1px solid {BorderColor};"">
+                                        <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Voucher Reference</p>
+                                        <p style=""margin:4px 0 0 0;font-size:14px;font-weight:700;color:{PrimaryGold};"">{EscapeHtml(voucherNumber)}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding-top:12px;"">
+                                        <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Accommodation Value</p>
+                                        <p style=""margin:4px 0 0 0;font-size:24px;font-weight:700;color:{PrimaryGold};"">KES {formattedAmount}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                
+                <!-- Trip Package Notice -->
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;background-color:rgba(217,119,6,0.08);border:1px solid rgba(217,119,6,0.2);border-radius:12px;"">
+                    <tr>
+                        <td style=""padding:16px 20px;"">
+                            <p style=""margin:0;font-size:13px;color:#f59e0b;font-weight:600;"">📋 Arranged Under Your Trip Package</p>
+                            <p style=""margin:6px 0 0 0;font-size:12px;color:{TextMuted};line-height:1.5;"">
+                                This room hold is reserved as part of your scheduled itinerary with Outreach Tours. <strong style=""color:{TextWhite};"">No separate payment is required from you</strong>—it is already accounted for within your client trip package.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                
+                <p style=""margin:24px 0 0 0;font-size:13px;color:{TextMuted};line-height:1.6;"">
+                    Our team will finalize all arrival coordination with the hotel. If you have any questions or custom preferences, please don't hesitate to reach out.
+                </p>";
+
+            var html = WrapInLayout(body, $"Room hold at {hotelName} for {checkIn} to {checkOut} — Voucher {voucherNumber}");
+            return (plain, html);
+        }
+
+        /// <summary>
+        /// Branded email sent to a client when their hotel booking is confirmed (payment received).
+        /// </summary>
+        public static (string plain, string html) GetBookingConfirmedEmail(
+            string clientName, string hotelName, string roomType, string checkIn, string checkOut,
+            double totalAmountKES, string voucherNumber)
+        {
+            var formattedAmount = totalAmountKES.ToString("N0");
+
+            var plain = $@"Hello {clientName},
+
+Great news! Your hotel booking has been confirmed.
+
+Hotel: {hotelName}
+Room: {roomType}
+Check-in: {checkIn}
+Check-out: {checkOut}
+Total Paid: KES {formattedAmount}
+Voucher: {voucherNumber}
+
+Your reservation is guaranteed. Please present your voucher number upon check-in.
+
+— The Outreach Tours Team";
+
+            var body = $@"
+                <h1 style=""margin:0 0 8px 0;font-size:24px;font-weight:700;color:{TextWhite};"">Booking Confirmed ✅</h1>
+                <p style=""margin:0 0 24px 0;font-size:14px;color:{TextMuted};line-height:1.5;"">
+                    Hello {EscapeHtml(clientName)}, your hotel reservation is now <strong style=""color:#10b981;"">confirmed and guaranteed</strong>.
+                </p>
+                
+                <!-- Booking Details Card -->
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;background-color:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:12px;overflow:hidden;"">
+                    <tr>
+                        <td style=""padding:20px;"">
+                            <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                <tr>
+                                    <td style=""padding-bottom:12px;border-bottom:1px solid {BorderColor};"">
+                                        <p style=""margin:0;font-size:11px;color:#10b981;text-transform:uppercase;letter-spacing:1px;font-weight:600;"">Confirmed Hotel</p>
+                                        <p style=""margin:4px 0 0 0;font-size:16px;font-weight:700;color:{TextWhite};"">{EscapeHtml(hotelName)}</p>
+                                        <p style=""margin:4px 0 0 0;font-size:12px;color:{TextMuted};"">{EscapeHtml(roomType)}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding:12px 0;border-bottom:1px solid {BorderColor};"">
+                                        <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                            <tr>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Check-in</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;color:{TextWhite};font-weight:600;"">{EscapeHtml(checkIn)}</p>
+                                                </td>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Check-out</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;color:{TextWhite};font-weight:600;"">{EscapeHtml(checkOut)}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding:12px 0;border-bottom:1px solid {BorderColor};"">
+                                        <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Voucher Number</p>
+                                        <p style=""margin:4px 0 0 0;font-size:18px;font-weight:700;color:{PrimaryGold};letter-spacing:1px;"">{EscapeHtml(voucherNumber)}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding-top:12px;"">
+                                        <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Amount Paid</p>
+                                        <p style=""margin:4px 0 0 0;font-size:28px;font-weight:700;color:#10b981;"">KES {formattedAmount}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+                
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;background-color:rgba(255,255,255,0.03);border:1px solid {BorderColor};border-radius:12px;"">
+                    <tr>
+                        <td style=""padding:16px 20px;"">
+                            <p style=""margin:0;font-size:12px;color:{TextWhite};font-weight:600;"">📋 Check-in Instructions</p>
+                            <p style=""margin:6px 0 0 0;font-size:12px;color:{TextMuted};line-height:1.5;"">
+                                Please present your voucher number <strong style=""color:{PrimaryGold};"">{EscapeHtml(voucherNumber)}</strong> at the front desk upon arrival. Your room has been guaranteed for the dates above.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+                
+                <p style=""margin:0;font-size:13px;color:{TextMuted};line-height:1.6;"">
+                    Thank you for choosing Outreach Tours. We hope you enjoy your stay!
+                </p>";
+
+            var html = WrapInLayout(body, $"Your booking at {hotelName} is confirmed — Voucher {voucherNumber}");
+            return (plain, html);
+        }
+
+        /// <summary>
+        /// Official agency booking order sent to the hotel's reservation desk.
+        /// Guarantees the room under Outreach Tours corporate account.
+        /// </summary>
+        public static (string plain, string html) GetHotelDeskBookingOrderEmail(
+            string hotelName, string voucherNumber, string clientName, int guestsCount, int roomsCount,
+            string roomType, string checkIn, string checkOut, double totalAmountKES, string notes)
+        {
+            var formattedAmount = totalAmountKES.ToString("N0");
+
+            var plain = $@"ATTN: RESERVATION DESK — {hotelName}
+
+OFFICIAL AGENCY ROOM BOOKING ORDER / VOUCHER
+
+Voucher / Booking Ref: {voucherNumber}
+Agency: Outreach Tours & Safaris Ltd (Corporate Account)
+
+Guest Name: {clientName}
+Number of Guests: {guestsCount}
+Number of Rooms: {roomsCount}
+Room Category: {roomType}
+Check-In Date: {checkIn}
+Check-Out Date: {checkOut}
+Agreed Total Value: KES {formattedAmount}
+
+Guest Special Requests / Notes:
+{(string.IsNullOrWhiteSpace(notes) ? "None specified" : notes)}
+
+BILLING INSTRUCTIONS:
+This booking is guaranteed by Outreach Tours. Please bill all room and included meal plan charges to our corporate account. Guest will present voucher reference {voucherNumber} upon arrival.
+
+Please reply to this email to acknowledge receipt and confirm your internal reservation number.
+
+Warm regards,
+Outreach Tours Operations & Concierge Desk
+Email: operations@outreachtours.com | reservations@outreachtours.com";
+
+            var notesHtml = string.IsNullOrWhiteSpace(notes) ? "" : $@"
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;background-color:rgba(255,255,255,0.02);border:1px solid {BorderColor};border-radius:12px;"">
+                    <tr>
+                        <td style=""padding:16px 20px;"">
+                            <p style=""margin:0;font-size:12px;color:{PrimaryGold};font-weight:600;"">Guest Preferences / Notes</p>
+                            <p style=""margin:6px 0 0 0;font-size:13px;color:{TextWhite};line-height:1.5;"">{EscapeHtml(notes)}</p>
+                        </td>
+                    </tr>
+                </table>";
+
+            var body = $@"
+                <div style=""border-bottom:2px solid {PrimaryGold};padding-bottom:12px;margin-bottom:20px;"">
+                    <span style=""font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:{PrimaryGold};font-weight:700;"">Official Agency Booking Order</span>
+                    <h1 style=""margin:6px 0 0 0;font-size:22px;font-weight:700;color:{TextWhite};"">{EscapeHtml(hotelName)} — Reservation Desk</h1>
+                </div>
+
+                <p style=""margin:0 0 20px 0;font-size:14px;color:{TextMuted};line-height:1.5;"">
+                    Please find below the guaranteed agency room reservation order for our client with Outreach Tours.
+                </p>
+
+                <!-- Order Details Card -->
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;background-color:rgba(255,255,255,0.03);border:1px solid {BorderColor};border-radius:12px;overflow:hidden;"">
+                    <tr>
+                        <td style=""padding:20px;"">
+                            <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                <tr>
+                                    <td style=""padding-bottom:12px;border-bottom:1px solid {BorderColor};"">
+                                        <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                            <tr>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Voucher / Order Number</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:16px;font-weight:700;color:{PrimaryGold};"">{EscapeHtml(voucherNumber)}</p>
+                                                </td>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Booking Agency</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;font-weight:600;color:{TextWhite};"">Outreach Tours &amp; Safaris</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding:12px 0;border-bottom:1px solid {BorderColor};"">
+                                        <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                            <tr>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Lead Guest Name</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:15px;font-weight:700;color:{TextWhite};"">{EscapeHtml(clientName)}</p>
+                                                </td>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Occupancy</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;color:{TextWhite};font-weight:600;"">{guestsCount} Guest(s) • {roomsCount} Room(s)</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding:12px 0;border-bottom:1px solid {BorderColor};"">
+                                        <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Reserved Room Category</p>
+                                        <p style=""margin:4px 0 0 0;font-size:14px;font-weight:600;color:{TextWhite};"">{EscapeHtml(roomType)}</p>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding:12px 0;border-bottom:1px solid {BorderColor};"">
+                                        <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"">
+                                            <tr>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Check-In</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;color:{TextWhite};font-weight:600;"">{EscapeHtml(checkIn)}</p>
+                                                </td>
+                                                <td width=""50%"">
+                                                    <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Check-Out</p>
+                                                    <p style=""margin:4px 0 0 0;font-size:14px;color:{TextWhite};font-weight:600;"">{EscapeHtml(checkOut)}</p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style=""padding-top:12px;"">
+                                        <p style=""margin:0;font-size:11px;color:{TextMuted};text-transform:uppercase;letter-spacing:1px;"">Agreed Package Valuation</p>
+                                        <p style=""margin:4px 0 0 0;font-size:22px;font-weight:700;color:{PrimaryGold};"">KES {formattedAmount}</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Special Requests -->
+                {notesHtml}
+
+                <!-- Billing Instructions -->
+                <table role=""presentation"" cellpadding=""0"" cellspacing=""0"" width=""100%"" style=""margin-bottom:24px;background-color:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.2);border-radius:12px;"">
+                    <tr>
+                        <td style=""padding:16px 20px;"">
+                            <p style=""margin:0;font-size:12px;color:#10b981;font-weight:700;"">💳 Billing &amp; Settlement Instructions</p>
+                            <p style=""margin:6px 0 0 0;font-size:12px;color:{TextMuted};line-height:1.5;"">
+                                This reservation is guaranteed under the corporate agency account of <strong style=""color:{TextWhite};"">Outreach Tours &amp; Safaris Ltd</strong>. Bill room charges and meal plans to our account. Extras to be settled by guest directly unless specified.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+
+                <p style=""margin:0;font-size:12px;color:{TextMuted};line-height:1.5;"">
+                    Please reply to confirm receipt and advise your internal confirmation number. For any queries, contact our operations desk at operations@outreachtours.com.
+                </p>";
+
+            var html = WrapInLayout(body, $"Agency Booking Order — {hotelName} ({voucherNumber})");
+            return (plain, html);
+        }
+
         private static string EscapeHtml(string input)
         {
             return System.Net.WebUtility.HtmlEncode(input ?? "");
