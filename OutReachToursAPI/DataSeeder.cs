@@ -1,6 +1,7 @@
 using OutReachToursAPI.Data;
 using OutReachToursAPI.Models;
 
+
 namespace OutReachToursAPI
 {
     public static class DataSeeder
