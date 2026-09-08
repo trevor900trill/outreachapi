@@ -24,6 +24,7 @@ namespace OutReachToursAPI.Controllers
             _logger = logger;
         }
 
+
         /// <summary>
         /// Real-time live room availability search via Booking.com / RapidAPI live engine.
         /// </summary>
