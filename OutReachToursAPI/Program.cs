@@ -4,6 +4,9 @@ using OutReachToursAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
+
 // ── CORS Configuration ──────────────────────────────
 builder.Services.AddCors(options =>
 {
@@ -42,7 +45,7 @@ string GetFormattedConnectionString(IConfiguration config)
     if (rawConnection.StartsWith("postgres://") || rawConnection.StartsWith("postgresql://"))
     {
         var uri = new Uri(rawConnection);
-        var userInfo = uri.UserInfo.Split(':');
+        var userInfo = uri.UserInfo.Split(':', 2);
         var user = userInfo.Length > 0 ? Uri.UnescapeDataString(userInfo[0]) : "";
         var password = userInfo.Length > 1 ? Uri.UnescapeDataString(userInfo[1]) : "";
         var host = uri.Host;
@@ -65,8 +68,9 @@ builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+try
 {
+    using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     
     // Automatically apply pending migrations
@@ -96,6 +100,11 @@ using (var scope = app.Services.CreateScope())
         adminUser.PasswordHash = OutReachToursAPI.Controllers.AuthController.ComputeHash("password123");
     }
     context.SaveChanges();
+}
+catch (Exception ex)
+{
+    var logger = app.Services.GetRequiredService<ILogger<Program>>();
+    logger.LogError(ex, "Database migration/seeding failed at startup. The application will continue running.");
 }
 
 // Configure the HTTP request pipeline.
